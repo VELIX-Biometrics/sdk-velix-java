@@ -3,14 +3,15 @@ package com.velix.sdk.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Conteúdo de Envelope.data para GET /v1/api/me/{personId} (scope me:read).
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record VelixEvent(
+public record MeResponse(
     String id,
     String name,
-    String status,
-    @JsonProperty("tenant_id") String tenantId,
-    @JsonProperty("start_date") String startDate,
-    @JsonProperty("end_date") String endDate,
-    @JsonProperty("checkin_count") int checkinCount,
+    String email,
+    String phone,
+    @JsonProperty("photo_url") String photoUrl,
     @JsonProperty("created_at") String createdAt
 ) {}

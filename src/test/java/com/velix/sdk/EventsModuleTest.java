@@ -1,7 +1,10 @@
 package com.velix.sdk;
 
+import com.velix.sdk.models.CreateGuestRequest;
+import com.velix.sdk.models.GuestResponse;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +24,7 @@ class EventsModuleTest {
         server.start();
         client = VelixClient.builder()
             .apiUrl(server.url("/").toString().replaceAll("/$", ""))
-            .apiKey("vx_test_key")
+            .apiKey("vlx_test_key")
             .build();
     }
 
@@ -29,61 +32,50 @@ class EventsModuleTest {
     void tearDown() throws IOException { server.shutdown(); }
 
     @Test
-    void list_returnsPagedEvents() {
-        server.enqueue(new MockResponse()
-            .setResponseCode(200)
-            .setHeader("Content-Type", "application/json")
-            .setBody("""
-                {"data":{"items":[{"id":"evt-1","name":"Tech Summit","status":"active"}],"total":1,"page":1,"limit":20}}
-                """));
-
-        var result = client.events().list(1, 20);
-
-        assertEquals(1, result.total());
-        assertEquals(1, result.items().size());
-        assertEquals("evt-1", result.items().get(0).id());
-    }
-
-    @Test
-    void get_returnsEvent() {
-        server.enqueue(new MockResponse()
-            .setResponseCode(200)
-            .setHeader("Content-Type", "application/json")
-            .setBody("""
-                {"data":{"id":"evt-1","name":"Tech Summit","status":"active"}}
-                """));
-
-        var event = client.events().get("evt-1");
-
-        assertEquals("evt-1", event.id());
-        assertEquals("Tech Summit", event.name());
-    }
-
-    @Test
-    void get_throwsOnNotFound() {
-        server.enqueue(new MockResponse()
-            .setResponseCode(404)
-            .setHeader("Content-Type", "application/json")
-            .setBody("""
-                {"message":"Event not found","code":"NOT_FOUND"}
-                """));
-
-        assertThrows(com.velix.sdk.exceptions.VelixException.class,
-            () -> client.events().get("nonexistent"));
-    }
-
-    @Test
-    void create_returnsNewEvent() {
+    void createGuest_postsToApiEventsGuests() throws InterruptedException {
         server.enqueue(new MockResponse()
             .setResponseCode(201)
             .setHeader("Content-Type", "application/json")
             .setBody("""
-                {"data":{"id":"evt-new","name":"New Event","status":"draft"}}
+                {"data":{"id":"guest-1","eventId":"evt-1","name":"João","email":"joao@test.com","status":"invited","categoryId":null}}
                 """));
 
-        var event = client.events().create("New Event");
+        CreateGuestRequest req = CreateGuestRequest.builder()
+            .name("João")
+            .email("joao@test.com")
+            .build();
 
-        assertEquals("evt-new", event.id());
-        assertEquals("draft", event.status());
+        GuestResponse guest = client.events().createGuest("evt-1", req);
+
+        assertEquals("guest-1", guest.id());
+        assertEquals("evt-1", guest.eventId());
+
+        RecordedRequest recorded = server.takeRequest();
+        assertEquals("/v1/api/events/evt-1/guests", recorded.getPath());
+    }
+
+    @Test
+    void getGuest_getsFromApiEventsGuests() throws InterruptedException {
+        server.enqueue(new MockResponse()
+            .setResponseCode(200)
+            .setHeader("Content-Type", "application/json")
+            .setBody("""
+                {"data":{"id":"guest-1","eventId":"evt-1","name":"João","email":"joao@test.com","status":"checked_in","categoryId":null}}
+                """));
+
+        GuestResponse guest = client.events().getGuest("evt-1", "guest-1");
+
+        assertEquals("checked_in", guest.status());
+
+        RecordedRequest recorded = server.takeRequest();
+        assertEquals("/v1/api/events/evt-1/guests/guest-1", recorded.getPath());
+    }
+
+    @Test
+    void createGuest_requiresNameAndEmail() {
+        assertThrows(IllegalArgumentException.class, () ->
+            CreateGuestRequest.builder().email("a@b.com").build());
+        assertThrows(IllegalArgumentException.class, () ->
+            CreateGuestRequest.builder().name("a").build());
     }
 }

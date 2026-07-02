@@ -6,8 +6,9 @@ import com.velix.sdk.exceptions.RateLimitException;
 import com.velix.sdk.exceptions.VelixException;
 import com.velix.sdk.modules.CheckinModule;
 import com.velix.sdk.modules.EventsModule;
-import com.velix.sdk.modules.PersonsModule;
-import com.velix.sdk.modules.TenantsModule;
+import com.velix.sdk.modules.LgpdModule;
+import com.velix.sdk.modules.MeModule;
+import com.velix.sdk.modules.OnboardingModule;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,10 +25,11 @@ public final class VelixClient {
     final HttpClient http;
     final ObjectMapper mapper;
 
+    private final OnboardingModule onboarding;
     private final CheckinModule checkin;
-    private final PersonsModule persons;
+    private final LgpdModule lgpd;
+    private final MeModule me;
     private final EventsModule events;
-    private final TenantsModule tenants;
 
     private VelixClient(VelixConfig config) {
         this.config = config;
@@ -35,18 +37,25 @@ public final class VelixClient {
             .connectTimeout(config.timeout())
             .build();
         this.mapper = new ObjectMapper();
+        this.onboarding = new OnboardingModule(this);
         this.checkin = new CheckinModule(this);
-        this.persons = new PersonsModule(this);
+        this.lgpd = new LgpdModule(this);
+        this.me = new MeModule(this);
         this.events = new EventsModule(this);
-        this.tenants = new TenantsModule(this);
     }
 
     public static Builder builder() { return new Builder(); }
 
-    public CheckinModule checkin()   { return checkin; }
-    public PersonsModule persons()   { return persons; }
-    public EventsModule events()     { return events; }
-    public TenantsModule tenants()   { return tenants; }
+    /** POST /v1/api/onboarding — scope onboarding:write. */
+    public OnboardingModule onboarding() { return onboarding; }
+    /** POST /v1/api/checkin/identify — scope checkin:write. */
+    public CheckinModule checkin()       { return checkin; }
+    /** POST /v1/api/deletion-request — scope lgpd:write. */
+    public LgpdModule lgpd()             { return lgpd; }
+    /** GET /v1/api/me/{personId} — scope me:read. */
+    public MeModule me()                 { return me; }
+    /** /v1/api/events/{id}/guests[/{guestId}] — scopes events:read/events:write. */
+    public EventsModule events()         { return events; }
 
     public <T> T get(String path, Class<T> type) {
         return request("GET", path, null, type);
