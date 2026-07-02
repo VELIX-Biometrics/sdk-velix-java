@@ -18,7 +18,7 @@ import java.time.Duration;
 
 public final class VelixClient {
 
-    static final String USER_AGENT = "velix-java-sdk/1.0.0";
+    static final String USER_AGENT = "velix-java-sdk/0.1.0-alpha.1";
 
     final VelixConfig config;
     final HttpClient http;
@@ -95,9 +95,15 @@ public final class VelixClient {
 
                 if (status == 401) throw new AuthException("Unauthorized — check your API key");
                 if (status == 429) {
-                    long retryAfter = res.headers().firstValueAsLong("Retry-After").orElse(1L);
+                    var retryAfterHeader = res.headers().firstValueAsLong("Retry-After");
+                    long retryAfter = retryAfterHeader.orElse(1L);
                     if (attempt < config.maxRetries()) {
-                        Thread.sleep(retryAfter * 1000L * (long) Math.pow(2, attempt));
+                        // respect Retry-After as-is when present; only apply exponential
+                        // backoff when the server didn't send the header
+                        long waitMillis = retryAfterHeader.isPresent()
+                            ? retryAfter * 1000L
+                            : retryAfter * 1000L * (long) Math.pow(2, attempt);
+                        Thread.sleep(waitMillis);
                         attempt++;
                         continue;
                     }
@@ -119,7 +125,10 @@ public final class VelixClient {
 
             } catch (VelixException e) {
                 throw e;
-            } catch (IOException | InterruptedException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new VelixException("Request interrupted: " + e.getMessage(), 0);
+            } catch (IOException e) {
                 if (attempt < config.maxRetries()) { attempt++; continue; }
                 throw new VelixException("Request failed: " + e.getMessage(), 0);
             }

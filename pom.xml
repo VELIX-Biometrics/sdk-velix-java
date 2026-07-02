@@ -13,6 +13,34 @@
   <description>SDK oficial Java para a API VELIX Biometrics</description>
   <url>https://velixbiometrics.com</url>
 
+  <licenses>
+    <license>
+      <name>UNLICENSED</name>
+      <comments>Pré-release — biblioteca proprietária VELIX Biometrics, uso interno/parceiros autorizados. Licença de distribuição pública a definir antes de release estável.</comments>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@bitbucket-brajola:brajola/velix-sdk-java.git</connection>
+    <developerConnection>scm:git:git@bitbucket-brajola:brajola/velix-sdk-java.git</developerConnection>
+    <url>https://bitbucket.org/brajola/velix-sdk-java</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>brajola</id>
+      <name>Fábio Rodrigues</name>
+      <email>brajola@gmail.com</email>
+      <organization>VELIX Biometrics</organization>
+      <organizationUrl>https://velixbiometrics.com</organizationUrl>
+      <roles>
+        <role>Co-Founder</role>
+        <role>Technical Lead</role>
+      </roles>
+    </developer>
+  </developers>
+
   <properties>
     <java.version>17</java.version>
     <maven.compiler.source>17</maven.compiler.source>
