@@ -15,15 +15,15 @@
 
   <licenses>
     <license>
-      <name>UNLICENSED</name>
-      <comments>Pré-release — biblioteca proprietária VELIX Biometrics, uso interno/parceiros autorizados. Licença de distribuição pública a definir antes de release estável.</comments>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
     </license>
   </licenses>
 
   <scm>
-    <connection>scm:git:git@bitbucket-brajola:brajola/velix-sdk-java.git</connection>
-    <developerConnection>scm:git:git@bitbucket-brajola:brajola/velix-sdk-java.git</developerConnection>
-    <url>https://bitbucket.org/brajola/velix-sdk-java</url>
+    <connection>scm:git:git@github.com:VELIX-Biometrics/sdk-velix-java.git</connection>
+    <developerConnection>scm:git:git@github.com:VELIX-Biometrics/sdk-velix-java.git</developerConnection>
+    <url>https://github.com/VELIX-Biometrics/sdk-velix-java</url>
     <tag>HEAD</tag>
   </scm>
 
