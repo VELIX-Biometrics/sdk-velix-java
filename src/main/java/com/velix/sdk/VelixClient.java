@@ -5,6 +5,7 @@ import com.velix.sdk.exceptions.AuthException;
 import com.velix.sdk.exceptions.RateLimitException;
 import com.velix.sdk.exceptions.VelixException;
 import com.velix.sdk.modules.CheckinModule;
+import com.velix.sdk.modules.ContextModule;
 import com.velix.sdk.modules.EventsModule;
 import com.velix.sdk.modules.LgpdModule;
 import com.velix.sdk.modules.MeModule;
@@ -30,6 +31,11 @@ public final class VelixClient {
     private final LgpdModule lgpd;
     private final MeModule me;
     private final EventsModule events;
+    private final ContextModule contexts;
+    private final ContextModule.Memberships memberships;
+    private final ContextModule.Roles contextRoles;
+    private final ContextModule.Permissions contextPermissions;
+    private final ContextModule.AuthorizationTokens authorizationTokens;
 
     private VelixClient(VelixConfig config) {
         this.config = config;
@@ -42,6 +48,11 @@ public final class VelixClient {
         this.lgpd = new LgpdModule(this);
         this.me = new MeModule(this);
         this.events = new EventsModule(this);
+        this.contexts = new ContextModule(this);
+        this.memberships = new ContextModule.Memberships(this);
+        this.contextRoles = new ContextModule.Roles(this);
+        this.contextPermissions = new ContextModule.Permissions(this);
+        this.authorizationTokens = new ContextModule.AuthorizationTokens(this);
     }
 
     public static Builder builder() { return new Builder(); }
@@ -56,6 +67,16 @@ public final class VelixClient {
     public MeModule me()                 { return me; }
     /** /v1/api/events/{id}/guests[/{guestId}] — scopes events:read/events:write. */
     public EventsModule events()         { return events; }
+    /** /v1/contexts/* — Identity Context (BearerAuth). */
+    public ContextModule contexts()      { return contexts; }
+    /** /v1/contexts/{id}/memberships, /v1/identities/{id}/memberships, /v1/memberships/* */
+    public ContextModule.Memberships memberships() { return memberships; }
+    /** /v1/context-roles* */
+    public ContextModule.Roles contextRoles() { return contextRoles; }
+    /** /v1/context-permissions */
+    public ContextModule.Permissions contextPermissions() { return contextPermissions; }
+    /** POST /v1/authorization-tokens/validate */
+    public ContextModule.AuthorizationTokens authorizationTokens() { return authorizationTokens; }
 
     public <T> T get(String path, Class<T> type) {
         return request("GET", path, null, type);

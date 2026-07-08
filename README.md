@@ -87,6 +87,27 @@ previous SDK method not listed above (`persons()`, `tenants()`, `checkin().facia
 `events().list/get/create/configure()`) pointed at endpoints that never existed on this
 surface and were removed in the realignment for task #656.
 
+| `client.contexts()` | `/v1/contexts/*` (BearerAuth) | `create/get/list/update/remove`, `authorize`, `listAuthorizationDecisions`, `createLinkRequest` |
+| `client.memberships()` | `/v1/contexts/:id/memberships`, `/v1/identities/:id/memberships`, `/v1/memberships/*` | `create`, `listByContext`, `listByIdentity`, `updateStatus`, `addRoles`, `removeRoles` |
+| `client.contextRoles()` | `/v1/context-roles*` | `create`, `list`, `linkPermissions` |
+| `client.contextPermissions()` | `/v1/context-permissions` | `create`, `list` |
+| `client.authorizationTokens()` | `POST /v1/authorization-tokens/validate` | `validate` |
+
+## Identity Context
+
+```java
+var context = client.contexts().create(Map.of("name", "Matriz SP", "contextType", "location"));
+var decision = client.contexts().authorize((String) context.get("id"),
+    Map.of("identityId", identityId, "permission", "access:enter"));
+var membership = client.memberships().create((String) context.get("id"),
+    Map.of("identityId", identityId, "roleIds", List.of(roleId)));
+// context exit (definitive, no grace period)
+client.memberships().updateStatus((String) membership.get("id"), "revoked");
+// cross-tenant link — stays PENDING until the person consents via magic link
+client.contexts().createLinkRequest((String) context.get("id"), Map.of("identityId", identityId));
+client.authorizationTokens().validate("vat_...", false);
+```
+
 ## Onboarding Module
 
 ```java
